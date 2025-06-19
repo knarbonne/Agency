@@ -1,35 +1,31 @@
 'use strict';
 
-var gulp = require('gulp');
-var sass = require('gulp-sass');
-var sass = require('gulp-sass')(require('sass'));
-var browserSync = require('browser-sync').create();
-var sourcemaps = require('gulp-sourcemaps');
-var autoprefixer = require('gulp-autoprefixer');
-var rename = require('gulp-rename');
-var rtlcss = require('gulp-rtlcss');
-var gulpif = require('gulp-if');
+const gulp = require('gulp');
+const sass = require('gulp-sass')(require('sass'));
+const browserSync = require('browser-sync').create();
+const sourcemaps = require('gulp-sourcemaps');
+const postcss = require('gulp-postcss');
+const autoprefixer = require('autoprefixer');
+const rename = require('gulp-rename');
+const rtlcss = require('gulp-rtlcss');
+const gulpif = require('gulp-if');
 
-var enableRTL = false; // TODO: RTL CSS will be only generated if this is TRUE
+const enableRTL = false; // Set to true to generate RTL styles
 
-var Paths = {
+const Paths = {
     TEMPLATE: './',
     SCSS: 'template/assets/scss/**/*.scss',
     CSS: 'template/assets/css/',
     JS: 'template/**/*.js',
     HTML: '*.html'
-}
+};
 
-// Compile sass into CSS
+// Compile SCSS into CSS with Autoprefixer and optional RTL
 gulp.task('sass', function () {
     return gulp.src(Paths.SCSS)
         .pipe(sourcemaps.init())
-        .pipe(sass.sync({
-            outputStyle: 'expanded'
-        }).on('error', sass.logError))
-        .pipe(autoprefixer({
-            overrideBrowserslist: ['last 2 versions']
-        }))
+        .pipe(sass.sync({ outputStyle: 'expanded' }).on('error', sass.logError))
+        .pipe(postcss([autoprefixer()]))
         .pipe(gulp.dest(Paths.CSS))
         .pipe(gulpif(enableRTL, rtlcss()))
         .pipe(gulpif(enableRTL, rename({ suffix: '-rtl' })))
@@ -38,7 +34,7 @@ gulp.task('sass', function () {
         .pipe(browserSync.stream());
 });
 
-// Static Server
+// Launch local server
 gulp.task('serve', function (done) {
     browserSync.init({
         server: Paths.TEMPLATE
@@ -46,7 +42,7 @@ gulp.task('serve', function (done) {
     done();
 });
 
-// watching scss/html files
+// Watch files and reload browser on changes
 gulp.task('watch', function (done) {
     gulp.watch(Paths.SCSS, gulp.series('sass'));
     gulp.watch(Paths.SCSS).on('change', browserSync.reload);
@@ -55,4 +51,5 @@ gulp.task('watch', function (done) {
     done();
 });
 
+// Default task
 gulp.task('default', gulp.series('sass', 'serve', 'watch'));
