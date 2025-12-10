@@ -4,6 +4,7 @@
   "description": "bootstrap based html template",
   "main": "gulpfile.js",
   "scripts": {
+    "build": "echo \"no build\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "webestica",
